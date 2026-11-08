@@ -1,0 +1,29 @@
+{
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "WalkingPad",
+        "width": 340,
+        "height": 510,
+        "visible": false,
+        "decorations": false,
+        "transparent": true,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "shadow": false
+      }
+    ]
+  },
+  "bundle": {
+    "targets": [
+      "nsis"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

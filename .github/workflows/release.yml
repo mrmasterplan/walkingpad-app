@@ -1,0 +1,83 @@
+name: Release
+
+# Push a tag like v0.1.0 (must match "version" in src-tauri/tauri.conf.json) to build
+# both apps and attach them to a draft GitHub release. Run manually from the Actions
+# tab to just build and download the bundles as workflow artifacts.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    name: Bundle (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS universal
+            os: macos-latest
+            rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
+            args: --target universal-apple-darwin
+            bundle-dir: src-tauri/target/universal-apple-darwin/release/bundle
+          - name: Windows x64
+            os: windows-latest
+            rust-targets: ""
+            args: ""
+            bundle-dir: src-tauri/target/release/bundle
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches app version
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          v="v$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          if [ "$v" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match tauri.conf.json version $v"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-targets }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: ${{ matrix.args }}
+
+      - run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          releaseName: WalkingPad ${{ github.ref_name }}
+          releaseDraft: true
+          releaseBody: |
+            Menu-bar / tray remote for KingSmith WalkingPad treadmills.
+
+            **macOS** (Apple Silicon and Intel): download the `.dmg`, drag WalkingPad to Applications. The app is not notarized, so the first launch is blocked: open **System Settings → Privacy & Security** and click **Open Anyway**. Allow Bluetooth when asked.
+
+            **Windows 10/11**: run the `-setup.exe`. It is not code-signed, so SmartScreen may warn: click **More info → Run anyway**. The app lives in the system tray (click the `^` arrow if it is hidden).
+          args: ${{ matrix.args }}
+
+      - name: Upload bundles as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: WalkingPad-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            ${{ matrix.bundle-dir }}/dmg/*.dmg
+            ${{ matrix.bundle-dir }}/nsis/*.exe

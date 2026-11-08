@@ -37,11 +37,31 @@ fn quit(app: AppHandle) {
     app.exit(0);
 }
 
+/// Text next to the menu-bar icon (macOS only; Windows tray icons have no title).
 fn tray_title(s: &Snapshot) -> String {
     match s.belt {
         Some(protocol::Belt::Running) => format!("{:.1}", s.speed),
         _ => String::new(),
     }
+}
+
+fn tray_tooltip(s: &Snapshot) -> String {
+    let today = format!("{} steps today", s.today_steps);
+    match s.belt {
+        Some(protocol::Belt::Running) => format!("WalkingPad · {:.1} km/h · {today}", s.speed),
+        _ if s.connection == "connected" => format!("WalkingPad · {today}"),
+        _ => format!("WalkingPad (not connected) · {today}"),
+    }
+}
+
+/// macOS: monochrome template image that adapts to the menu bar.
+/// Windows: the colour app icon, which reads on both light and dark taskbars.
+fn tray_icon() -> tauri::Result<Image<'static>> {
+    #[cfg(target_os = "macos")]
+    let bytes: &[u8] = include_bytes!("../icons/tray.png");
+    #[cfg(not(target_os = "macos"))]
+    let bytes: &[u8] = include_bytes!("../icons/64x64.png");
+    Image::from_bytes(bytes)
 }
 
 fn toggle_popover(app: &AppHandle) {
@@ -59,10 +79,13 @@ fn toggle_popover(app: &AppHandle) {
     if recently_hidden {
         return;
     }
+    // macOS: hang below the menu bar. Windows: sit on top of the taskbar
+    // (TrayCenter flips below the icon if the taskbar is at the top).
     #[cfg(target_os = "macos")]
-    let _ = win.move_window(Position::TrayBottomCenter);
+    let pos = Position::TrayBottomCenter;
     #[cfg(not(target_os = "macos"))]
-    let _ = win.move_window(Position::TrayCenter);
+    let pos = Position::TrayCenter;
+    let _ = win.move_window_constrained(pos);
     let _ = win.show();
     let _ = win.set_focus();
 }
@@ -84,8 +107,8 @@ pub fn run() {
             let quit_item = MenuItem::with_id(app, "quit", "Quit WalkingPad", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&quit_item])?;
             TrayIconBuilder::with_id("main")
-                .icon(Image::from_bytes(include_bytes!("../icons/tray.png"))?)
-                .icon_as_template(true)
+                .icon(tray_icon()?)
+                .icon_as_template(cfg!(target_os = "macos"))
                 .tooltip("WalkingPad")
                 .menu(&menu)
                 .show_menu_on_left_click(false)
@@ -106,7 +129,10 @@ pub fn run() {
             let listener: Listener = Arc::new(move |s: &Snapshot| {
                 let _ = handle.emit("pad", s);
                 if let Some(tray) = handle.tray_by_id("main") {
-                    let _ = tray.set_title(Some(tray_title(s)));
+                    if cfg!(target_os = "macos") {
+                        let _ = tray.set_title(Some(tray_title(s)));
+                    }
+                    let _ = tray.set_tooltip(Some(tray_tooltip(s)));
                 }
             });
             tauri::async_runtime::spawn(Worker::new(rx, shared.clone(), listener, store).run());
