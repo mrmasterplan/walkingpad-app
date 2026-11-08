@@ -6,7 +6,7 @@ Built with Tauri 2: the UI is plain HTML/CSS/JS in [ui/](ui/), and the core is R
 
 | File | What |
 |---|---|
-| `protocol.rs` | Frame encode/decode for the WiLink FE00 protocol. Tests use frames captured from a real pad. See [../PROTOCOL.md](../PROTOCOL.md). |
+| `protocol.rs` | Frame encode/decode for the WiLink FE00 protocol. Tests use frames captured from a real pad. See [PROTOCOL.md](PROTOCOL.md). |
 | `pad.rs` | Bluetooth worker (btleplug): find/connect/reconnect, 1 Hz polling, debounced speed changes, start sequencing, keep-running blips, stats feeding. No Tauri dependency. |
 | `stats.rs` | Daily totals in `stats.json` (app data dir). Converts per-session pad counters into daily deltas and reconciles with the pad's stored last record. |
 | `lib.rs` | Tauri shell: tray icon, popover positioning, hide-on-blur, IPC commands. |
