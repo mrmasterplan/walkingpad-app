@@ -1,0 +1,127 @@
+:root {
+  --bg: #f4f5f7;
+  --fg: #1d2329;
+  --muted: #6b737c;
+  --line: #dde0e4;
+  --accent: #2fa877;
+  --accent-fg: #ffffff;
+  --stop: #e0544b;
+  --pill: #c4c8cc;
+  --pill-edge: #9aa0a6;
+  --key: #e9ecee;
+  --key-edge: #8a9096;
+  --key-fg: #454c53;
+  --bar: #c9ced3;
+  font: 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1f2429;
+    --fg: #eef1f3;
+    --muted: #9aa3ab;
+    --line: #353c43;
+    --pill: #4a5158;
+    --pill-edge: #2a2f34;
+    --key: #636b73;
+    --key-edge: #2a2f34;
+    --key-fg: #eef1f3;
+    --bar: #46505a;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+body { padding: 6px; -webkit-user-select: none; user-select: none; cursor: default; }
+
+.panel {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 10px;
+  gap: 10px;
+}
+
+header { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 500; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #c9a227; flex: none; }
+[data-conn="connected"] .dot { background: var(--accent); }
+[data-conn="no-bluetooth"] .dot { background: var(--stop); }
+[data-conn="searching"] .dot, [data-conn="connecting"] .dot { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+.chip { margin-left: auto; font-size: 11px; padding: 1px 8px; border-radius: 10px; background: var(--line); color: var(--fg); }
+.chip:empty { display: none; }
+
+.body { display: flex; gap: 12px; align-items: center; }
+.readouts { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.speed { font-size: 46px; font-weight: 600; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; line-height: 1; }
+.speed small { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+.target { color: var(--muted); font-size: 12px; min-height: 16px; font-variant-numeric: tabular-nums; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 600; }
+.today { margin-top: 10px; }
+.today .big { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.today .big small { font-size: 12px; color: var(--muted); font-weight: 500; }
+.today .sub { color: var(--muted); font-variant-numeric: tabular-nums; }
+.session { margin-top: 10px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* The remote: a grey pill with round keys, like the WalkingPad A1 remote. */
+.remote {
+  flex: none;
+  width: 88px;
+  padding: 14px 0;
+  border-radius: 44px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pill) 85%, white), var(--pill));
+  border: 1.5px solid var(--pill-edge);
+  box-shadow: 0 6px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.key {
+  position: relative;
+  width: 62px; height: 62px;
+  border-radius: 50%;
+  border: 1.5px solid var(--key-edge);
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--key) 70%, white), var(--key));
+  color: var(--key-fg);
+  box-shadow: 0 3px 6px rgba(0,0,0,.22);
+  display: grid; place-items: center;
+  padding: 0;
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.key:active, .key.pressed { transform: translateY(2px); box-shadow: 0 1px 2px rgba(0,0,0,.22); }
+.key svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.key:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.go { background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent) 75%, white), var(--accent)); color: var(--accent-fg); border-color: color-mix(in srgb, var(--accent) 60%, black); }
+.go svg { fill: currentColor; stroke: none; }
+.go .stop { display: none; }
+[data-belt="running"] .go { background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--stop) 75%, white), var(--stop)); border-color: color-mix(in srgb, var(--stop) 60%, black); }
+[data-belt="running"] .go .play { display: none; }
+[data-belt="running"] .go .stop { display: block; }
+.count { position: absolute; font-size: 26px; font-weight: 700; }
+[data-belt="countdown"] .go svg { display: none; }
+.mode svg { width: 22px; height: 22px; }
+
+[data-conn]:not([data-conn="connected"]) .remote { opacity: .45; pointer-events: none; }
+
+.week { display: flex; flex-direction: column; gap: 6px; }
+.bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end; height: 64px; }
+.bar { display: flex; flex-direction: column; align-items: center; gap: 3px; height: 100%; justify-content: flex-end; }
+.bar i { display: block; width: 100%; border-radius: 4px 4px 2px 2px; background: var(--bar); min-height: 2px; }
+.bar.today i { background: var(--accent); }
+.bar span { font-size: 10px; color: var(--muted); }
+
+footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 8px; color: var(--muted); font-size: 12px; }
+.toggle { display: flex; align-items: center; gap: 8px; }
+.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.track { width: 28px; height: 16px; border-radius: 8px; background: var(--line); position: relative; transition: background .15s; }
+.thumb { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: left .15s; }
+.toggle input:checked + .track { background: var(--accent); }
+.toggle input:checked + .track .thumb { left: 14px; }
+.toggle input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.link { background: none; border: 0; color: var(--muted); font: inherit; padding: 2px 4px; border-radius: 4px; }
+.link:hover { color: var(--fg); background: var(--line); }

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WalkingPad</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="panel" id="panel" data-conn="searching">
+    <header>
+      <span class="dot" aria-hidden="true"></span>
+      <span id="conn">Looking for WalkingPad…</span>
+      <span id="mode-label" class="chip"></span>
+    </header>
+
+    <section class="body">
+      <div class="readouts">
+        <div class="speed">
+          <span id="speed">0.0</span><small>km/h</small>
+        </div>
+        <div id="target" class="target">&nbsp;</div>
+
+        <div class="today">
+          <div class="label">Today</div>
+          <div class="big"><span id="today-steps">0</span> <small>steps</small></div>
+          <div class="sub"><span id="today-km">0.00</span> km · <span id="today-min">0</span> min</div>
+        </div>
+
+        <div class="session" id="session">&nbsp;</div>
+      </div>
+
+      <div class="remote" role="group" aria-label="Remote control">
+        <button class="key" id="up" title="Faster (↑ = 0.1, click = 0.5)" aria-label="Faster">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="key go" id="startstop" title="Start / stop (space)" aria-label="Start or stop">
+          <svg class="play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+          <svg class="stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/></svg>
+          <span class="count" id="count"></span>
+        </button>
+        <button class="key" id="down" title="Slower (↓ = 0.1, click = 0.5)" aria-label="Slower">
+          <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+        </button>
+        <button class="key mode" id="mode" title="Click: manual ↔ auto · hold: standby" aria-label="Mode">
+          <svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="week">
+      <div class="label">Last 7 days</div>
+      <div class="bars" id="bars"></div>
+    </section>
+
+    <footer>
+      <label class="toggle" title="If no steps are detected for 20 s, briefly bump the speed so the pad does not auto-stop (costs two beeps)">
+        <input type="checkbox" id="keep" />
+        <span class="track"><span class="thumb"></span></span>
+        Keep running when idle
+      </label>
+      <button class="link" id="quit">Quit</button>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
